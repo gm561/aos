@@ -1,0 +1,45 @@
+/**
+ * \file
+ * \brief Kernel serial driver for the OMAP44xx UARTs.  Implements the
+ * interface found in /kernel/include/serial.h
+ */
+
+/*
+ * Copyright (c) 2012, ETH Zurich.
+ * All rights reserved.
+ *
+ * This file is distributed under the terms in the attached LICENSE file.
+ * If you do not find this file, copies can be found by writing to:
+ * ETH Zurich D-INFK, Haldeneggsteig 4, CH-8092 Zurich. Attn: Systems Group.
+ */
+
+#include <kernel.h>
+#include <arm.h>
+
+#include <serial.h>
+
+#define UART_BASE 0x48020000
+
+/**
+ * \brief Initialize the console UART
+ */
+void serial_init(void)
+{
+    // TODO: Disable all interrupts
+
+    // TODO: Enable FIFOs and select highest trigger levels
+    // i.e.  RX_FIFO_TRIG = TX_FIFO_TRIG = 3, FIFO_EN = 1
+
+    // TODO: Set line to 8 bits, no parity, 1 stop bit
+}
+
+/**
+ * \brief Prints a single character to a serial port.
+ */
+void serial_putchar(char c)
+{
+
+    // TODO: Wait until FIFO can hold more characters (i.e. TX_FIFO_E == 1)
+
+    // TODO: Write character
+}

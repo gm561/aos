@@ -1,0 +1,68 @@
+--------------------------------------------------------------------------
+-- Copyright (c) 2007-2012, ETH Zurich.
+-- All rights reserved.
+--
+-- This file is distributed under the terms in the attached LICENSE file.
+-- If you do not find this file, copies can be found by writing to:
+-- ETH Zurich D-INFK, CAB F.78, Universitaetstr. 6, CH-8092 Zurich. 
+-- Attn: Systems Group.
+--
+-- Hakefile for Barrelfish CPU drivers
+-- 
+--------------------------------------------------------------------------
+
+let
+  common_c = [ "memset.c", 
+               "memmove.c", 
+               "printf.c",
+               "stdlib.c", 
+               "string.c" ]
+  common_libs = [ "getopt", "mdb_kernel" ]
+  
+  link_cpudriver arg = linkKernel opts name objs libs
+    where 
+      opts = (kernelOptions $ head $ Args.architectures arg)
+      suffix = if "cpu" == Args.target arg 
+             then "" 
+             else "_" ++ (Args.target arg)
+      name = "cpu" ++ suffix
+      objs = [ objectFilePath opts f 
+             | f <- (Args.assemblyFiles arg) ++ (Args.cFiles arg) ++ common_c ] 
+      libs = (Args.addLibraries arg) ++ common_libs
+    
+  cpudrivers arglist = 
+    let 
+      cafiles = List.nub $ concat [ [ [ arch, cfile ] 
+                                    | arch <- Args.architectures arg,
+                                      cfile <- common_c ++ (Args.cFiles arg) ]
+                                  | arg <- arglist ]
+      safiles = List.nub $ concat [ [ [ arch, sfile ]
+                                    | arch <- Args.architectures arg,
+                                      sfile <- Args.assemblyFiles arg ]
+                                  | arg <- arglist ]
+    in
+     ( [ compileCFile (kernelOptions a) f | [a,f] <- cafiles ]
+       ++
+       [ assembleSFile (kernelOptions a) f | [a,f] <- safiles ]
+       ++
+       [ link_cpudriver arg | arg <- arglist ]
+     )
+         
+  in cpudrivers [
+  --
+  -- Broadcom OMAP44xx-series dual-core Cortex-A9 SoC
+  --
+  cpuDriver {
+     target = "omap44xx",
+     architectures = [ "arm_gem5" ],
+     assemblyFiles = [ "arch/omap44xx/boot.S", "arch/omap44xx/exceptions.S" ],
+     cFiles = [ "arch/omap44xx/exn.c",
+                "arch/omap44xx/init.c",                  
+                "arch/omap44xx/kludges.c",
+                "arch/omap44xx/kputchar.c",
+                "arch/omap44xx/misc.c",
+                "arch/omap44xx/omap_uart.c" ],
+     addLibraries = [ "elf" ]
+     }                            
+  
+  ]
